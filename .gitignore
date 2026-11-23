@@ -1,0 +1,15 @@
+# Credentials & Secrets 
+gcp-key.json
+*.json
+.env
+
+# Python environments & cache
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# OS files
+.DS_Store
+Thumbs.db

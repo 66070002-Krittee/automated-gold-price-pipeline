@@ -1,0 +1,44 @@
+name: Automated Gold Price ETL Pipeline
+
+on:
+  schedule:
+    # GitHub Actions ใช้เวลา UTC (เวลาไทยเร็วกว่า UTC 7 ชั่วโมง)
+    - cron: '0 3 * * *'   
+    - cron: '0 9 * * *'   
+  workflow_dispatch:      # เพิ่มปุ่มรันทดสอบบนGitHub
+
+jobs:
+  run-gold-etl:
+    name: Extract, Transform & Load Gold Prices
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 1. Checkout Repository Code
+        uses: actions/checkout@v4
+
+      - name: 2. Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: 3. Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: 4. Run Gold Price ETL Pipeline
+        env:
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          GOOGLE_APPLICATION_CREDENTIALS: gcp-key.json
+          LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+          LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
+          LOOKER_DASHBOARD_URL: ${{ secrets.LOOKER_DASHBOARD_URL }}
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+        run: |
+          printf '%s' "$GCP_SA_KEY" > gcp-key.json
+          python src/etl_gold_price.py
+
+      - name: 5. Clean up GCP Credentials
+        if: always()
+        run: rm -f gcp-key.json

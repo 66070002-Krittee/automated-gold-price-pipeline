@@ -333,8 +333,18 @@ def main() -> None:
         df = transform_and_validate(xau_usd_oz, usd_thb_rate, thai_data)
         load_to_bigquery_idempotent(df)
 
-        report_msg = format_mom_line_report(df)
-        send_line_message(report_msg)
+        # ส่งเข้า LINE เฉพาะรอบ 10:00 น. และ 16:00 น. เวลาไทย (หรือตอนกดปุ่ม Run workflow ทดสอบเองบน GitHub)
+        now_bkk = datetime.now(ZoneInfo("Asia/Bangkok"))
+        github_event = os.getenv("GITHUB_EVENT_NAME", "").strip()
+
+        if now_bkk.hour in (10, 16) or github_event == "workflow_dispatch":
+            report_msg = format_mom_line_report(df)
+            send_line_message(report_msg)
+        else:
+            logger.info(
+                f"อัปโหลดข้อมูลเข้า BigQuery สำเร็จ (รอบ {now_bkk.strftime('%H:%M')} น. — ข้ามการส่ง LINE นอกรอบ 10:00 / 16:00 น.)"
+            )
+
         logger.info("=== Pipeline ทำงานเสร็จสิ้นสมบูรณ์ ===")
 
     except Exception as exc:

@@ -2,10 +2,8 @@ name: Automated Gold Price ETL Pipeline
 
 on:
   schedule:
-    # GitHub Actions ใช้เวลา UTC (เวลาไทยเร็วกว่า UTC 7 ชั่วโมง)
-    - cron: '12 3 * * *'   
-    - cron: '12 9 * * *'   
-  workflow_dispatch:      # เพิ่มปุ่มรันทดสอบบนGitHub
+    - cron: '15 * * * *'
+  workflow_dispatch:
 
 jobs:
   run-gold-etl:
